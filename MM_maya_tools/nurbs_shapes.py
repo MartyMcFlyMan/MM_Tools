@@ -30,4 +30,3 @@ def segmented_circle():
     mel.eval("scale -cs -ls -r 1 1.829562 1 ;")
     mel.eval("move -r -os -wd 0 0.583789 0 ;")
     mel.eval("select -d ;")
-
