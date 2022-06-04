@@ -100,7 +100,7 @@ def maya_main_window():
 class RenamerUI(QtWidgets.QDialog):
     def __init__(self, parent=maya_main_window()):
         super(RenamerUI, self).__init__(parent)
-        self.renamer = rc.Renamer()
+        self.renamer = Renamer()
         self.user_script_directory = cmds.internalVar(usd=True)
         self.user_preset_file = "MM_rename_user_presets.json"
         self.user_preset_path = self.user_script_directory + self.user_preset_file
@@ -336,6 +336,10 @@ class RenamerUI(QtWidgets.QDialog):
             json.dump(user_presets, file_for_write, indent=4)
         self.refresh_preset_menus()
 
+def onMayaDroppedPythonFile(obj):
+    if cmds.window("MM_Rename", q=True, ex=True):
+        cmds.deleteUI("MM_Rename")
+    renamer_ui = RenamerUI()
 
 if __name__ == "__main__":
     if cmds.window("MM_Rename", q=True, ex=True):
