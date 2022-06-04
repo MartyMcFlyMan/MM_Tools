@@ -4,11 +4,6 @@ import os
 import json
 import maya.OpenMayaUI as omui
 from shiboken2 import wrapInstance
-try:
-    import importlib
-    importlib.reload(rc)
-except:
-    reload(rc)
 
 
 class Renamer:
