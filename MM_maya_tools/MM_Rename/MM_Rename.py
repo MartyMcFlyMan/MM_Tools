@@ -1,9 +1,15 @@
 from PySide2 import QtWidgets, QtCore, QtGui
 import maya.cmds as cmds
-import os
-import json
+import maya.mel as mel
+import os, json, sys
 import maya.OpenMayaUI as omui
 from shiboken2 import wrapInstance
+
+
+def maya_main_window():
+    """ return maya main window as QWidget object """
+    main_window_ptr = omui.MQtUtil.mainWindow()
+    return wrapInstance(int(main_window_ptr), QtWidgets.QWidget)
 
 
 class Renamer:
@@ -91,12 +97,6 @@ class Renamer:
         return cmds.ls(sl=True, l=True)
 
 
-def maya_main_window():
-    """ return maya main window as QWidget object """
-    main_window_ptr = omui.MQtUtil.mainWindow()
-    return wrapInstance(long(main_window_ptr), QtWidgets.QWidget)
-
-
 class RenamerUI(QtWidgets.QDialog):
     def __init__(self, parent=maya_main_window()):
         super(RenamerUI, self).__init__(parent)
@@ -108,6 +108,8 @@ class RenamerUI(QtWidgets.QDialog):
         self.create_user_presets()
 
     def init_ui(self):
+        if cmds.window("MM_Rename", q=True, ex=True):
+            cmds.deleteUI("MM_Rename")
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)  # remove ? button
         self.setFixedWidth(300)
         self.setWindowTitle("MM Rename")
@@ -337,11 +339,46 @@ class RenamerUI(QtWidgets.QDialog):
         self.refresh_preset_menus()
 
 def onMayaDroppedPythonFile(obj):
-    if cmds.window("MM_Rename", q=True, ex=True):
-        cmds.deleteUI("MM_Rename")
-    renamer_ui = RenamerUI()
+    user_setup = find_user_setup()
+    modify_user_setup(user_setup)
+    create_shelf_button()
 
-if __name__ == "__main__":
-    if cmds.window("MM_Rename", q=True, ex=True):
-        cmds.deleteUI("MM_Rename")
-    renamer_ui = RenamerUI()
+def find_user_setup():
+    base_script_dir = cmds.internalVar(uad=True) + "scripts/"
+    version_script_dir = cmds.internalVar(usd=True)
+    if "userSetup.py" in os.listdir(version_script_dir):
+        user_setup = version_script_dir + "userSetup.py"
+        print("User setup found in: " + user_setup)
+    elif "userSetup.py" in os.listdir(base_script_dir):
+        user_setup = base_script_dir + "userSetup.py"
+        print("User setup found in: " + user_setup)
+    else:
+        user_setup = version_script_dir + "userSetup.py"
+        print("User setup found in: " + user_setup)
+
+    return user_setup
+
+def modify_user_setup(user_setup):
+    """
+    Add MM_Rename folder to userSetup.py
+    Check if sys is imported, if not add import statement to top of file.
+    """
+    version_script_dir = cmds.internalVar(usd=True) + "MM_Rename/"
+    path_line = "\nsys.path.append('{0}')\n".format(version_script_dir)
+    with open(user_setup, 'a') as file:
+        file.write(path_line)
+    with open(user_setup, 'r+') as file:
+        content = file.read()
+        if "import sys" not in content:
+            print("Adding 'import sys' to userSetup.py")
+            file.seek(0)
+            file.write("import sys\n" + content)
+    sys.path.append(version_script_dir + "MM_Rename/")
+
+def create_shelf_button():
+    topShelf = mel.eval('$nul = $gShelfTopLevel')
+    currentShelf = cmds.tabLayout(topShelf, q=1, st=1)
+    cmds.shelfButton(parent=currentShelf,
+                     i=cmds.internalVar(usd=True) + "MM_Rename/MM_Rename.png",
+                     c="import MM_Rename as mmr;mmr.RenamerUI();",
+                     label="Rename")
