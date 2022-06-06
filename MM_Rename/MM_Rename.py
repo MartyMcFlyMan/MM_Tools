@@ -103,7 +103,8 @@ class RenamerUI(QtWidgets.QDialog):
         self.renamer = Renamer()
         self.user_script_directory = cmds.internalVar(usd=True)
         self.user_preset_file = "MM_rename_user_presets.json"
-        self.user_preset_path = self.user_script_directory + self.user_preset_file
+        self.user_preset_dir = self.user_script_directory + "MM_Rename/"
+        self.user_preset_path = self.user_preset_dir + self.user_preset_file
         self.init_ui()
         self.create_user_presets()
 
@@ -262,7 +263,7 @@ class RenamerUI(QtWidgets.QDialog):
                 "CTL",  # Controller
             ]
         }
-        if self.user_preset_file not in os.listdir(self.user_script_directory):
+        if self.user_preset_file not in os.listdir(self.user_preset_dir):
             with open(self.user_preset_path, 'w') as file_for_write:
                 json.dump(user_presets, file_for_write, indent=4)
         else:
