@@ -365,15 +365,17 @@ def modify_user_setup(user_setup):
     Check if sys is imported, if not add import statement to top of file.
     """
     version_script_dir = cmds.internalVar(usd=True) + "MM_Rename/"
-    path_line = "\nsys.path.append('{0}')\n".format(version_script_dir)
-    with open(user_setup, 'a') as file:
-        file.write(path_line)
+    path_line = "sys.path.append('{0}')".format(version_script_dir)
     with open(user_setup, 'r+') as file:
         content = file.read()
         if "import sys" not in content:
             print("Adding 'import sys' to userSetup.py")
             file.seek(0)
             file.write("import sys\n" + content)
+    with open(user_setup, 'a') as file:
+        if path_line not in content:
+            print("Adding {0} to userSetup.py".format(path_line))
+            file.write("\n{0}\n".format(path_line))
     sys.path.append(version_script_dir + "MM_Rename/")
 
 def create_shelf_button():
