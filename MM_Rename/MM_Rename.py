@@ -29,7 +29,7 @@ class Renamer:
     @_run_in_undochunk
     def add_suffix(self, suffix):
         initial_selection = self.selection
-        for index in range(len(initial_selection)):
+        for index, value in enumerate(initial_selection):
             old_long_name = self.selection[index]
             new_name = old_long_name.split("|")[-1] + suffix
             cmds.rename(old_long_name, new_name)
@@ -37,7 +37,7 @@ class Renamer:
     @_run_in_undochunk
     def add_prefix(self, prefix):
         initial_selection = self.selection
-        for index in range(len(initial_selection)):
+        for index, value in enumerate(initial_selection):
             old_long_name = self.selection[index]
             new_short_name = prefix + old_long_name.split("|")[-1]
             cmds.rename(old_long_name, new_short_name)
@@ -45,7 +45,7 @@ class Renamer:
     @_run_in_undochunk
     def search_replace(self, search_str, replace_str):
         initial_selection = self.selection
-        for index in range(len(initial_selection)):
+        for index, value in enumerate(initial_selection):
             old_long_name = self.selection[index]
             old_short_name = old_long_name.split("|")[-1]
             new_short_name = old_short_name.replace(search_str, replace_str)
@@ -55,7 +55,7 @@ class Renamer:
     def rename_and_number(self, rename_str, padding):
         padding = len(padding)
         initial_selection = self.selection
-        for index in range(len(initial_selection)):
+        for index, value in enumerate(initial_selection):
             old_long_name = self.selection[index]
             new_short_name = rename_str + str(index + 1).zfill(padding)
             cmds.rename(old_long_name, new_short_name)
